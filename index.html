@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuito Elétrico Interativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #1e3a5f 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 2px solid rgba(66, 153, 225, 0.3);
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #4299e1;
+            text-shadow: 0 0 20px rgba(66, 153, 225, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #a0aec0;
+        }
+
+        .circuit-demo {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 2px solid rgba(66, 153, 225, 0.3);
+            text-align: center;
+        }
+
+        .circuit-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            margin: 30px auto;
+            background: rgba(10, 25, 41, 0.5);
+            border-radius: 15px;
+            padding: 40px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .wire {
+            fill: none;
+            stroke: #718096;
+            stroke-width: 4;
+            transition: stroke 0.3s ease;
+        }
+
+        .wire.active {
+            stroke: #4299e1;
+            filter: drop-shadow(0 0 10px #4299e1);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                stroke: #4299e1;
+                filter: drop-shadow(0 0 10px #4299e1);
+            }
+            50% {
+                stroke: #63b3ed;
+                filter: drop-shadow(0 0 20px #63b3ed);
+            }
+        }
+
+        .battery {
+            fill: #718096;
+            transition: fill 0.3s ease;
+        }
+
+        .battery.active {
+            fill: #4299e1;
+        }
+
+        .bulb-base {
+            fill: #718096;
+        }
+
+        .bulb-glass {
+            fill: rgba(255, 255, 255, 0.1);
+            stroke: #718096;
+            stroke-width: 2;
+        }
+
+        .bulb-light {
+            fill: #ffd700;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            filter: blur(3px);
+        }
+
+        .bulb-light.active {
+            opacity: 1;
+            animation: glow 1s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                filter: blur(3px) drop-shadow(0 0 20px #ffd700);
+            }
+            to {
+                filter: blur(5px) drop-shadow(0 0 40px #ffd700);
+            }
+        }
+
+        .switch {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .switch:hover {
+            transform: scale(1.05);
+        }
+
+        .switch-base {
+            fill: #2d3748;
+        }
+
+        .switch-lever {
+            fill: #e53e3e;
+            transition: fill 0.3s ease, transform 0.3s ease;
+            transform-origin: center;
+        }
+
+        .switch-lever.active {
+            fill: #48bb78;
+            transform: rotate(30deg);
+        }
+
+        .switch-text {
+            fill: white;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(66, 153, 225, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(66, 153, 225, 0.3);
+        }
+
+        .info-card h3 {
+            color: #4299e1;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .info-card p {
+            line-height: 1.6;
+            color: #cbd5e0;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .status.on {
+            color: #48bb78;
+            text-shadow: 0 0 10px rgba(72, 187, 120, 0.5);
+        }
+
+        .status.off {
+            color: #e53e3e;
+        }
+
+        .instruction {
+            text-align: center;
+            font-size: 1.1em;
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Circuito Elétrico Interativo</h1>
+            <p class="subtitle">Aprenda como funciona um circuito elétrico simples</p>
+        </header>
+
+        <div class="circuit-demo">
+            <h2 style="color: #4299e1; margin-bottom: 20px;">Demonstração Interativa</h2>
+            <p class="instruction">👇 Clique no interruptor para acender/apagar a lâmpada</p>
+            
+            <div class="circuit-container">
+                <svg viewBox="0 0 500 300">
+                    <!-- Fios do circuito -->
+                    <path class="wire" id="wire1" d="M 100 150 L 100 50 L 400 50 L 400 150" />
+                    <path class="wire" id="wire2" d="M 100 150 L 100 250 L 250 250" />
+                    <path class="wire" id="wire3" d="M 350 250 L 400 250 L 400 150" />
+                    
+                    <!-- Bateria -->
+                    <g class="battery" id="battery">
+                        <rect x="380" y="140" width="40" height="60" rx="5" />
+                        <rect x="385" y="130" width="30" height="10" fill="#e53e3e" />
+                        <text x="400" y="175" fill="white" font-size="20" text-anchor="middle">+</text>
+                        <text x="400" y="195" fill="white" font-size="20" text-anchor="middle">-</text>
+                    </g>
+                    
+                    <!-- Lâmpada -->
+                    <g id="bulb">
+                        <circle class="bulb-light" id="bulbLight" cx="100" cy="100" r="35" />
+                        <circle class="bulb-glass" cx="100" cy="100" r="30" />
+                        <rect class="bulb-base" x="90" y="125" width="20" height="25" />
+                        <line x1="85" y1="110" x2="115" y2="90" stroke="#718096" stroke-width="2" />
+                        <line x1="85" y1="90" x2="115" y2="110" stroke="#718096" stroke-width="2" />
+                    </g>
+                    
+                    <!-- Interruptor -->
+                    <g class="switch" id="switch">
+                        <rect class="switch-base" x="230" y="230" width="140" height="40" rx="5" />
+                        <circle class="switch-lever" id="switchLever" cx="300" cy="250" r="15" />
+                        <text class="switch-text" x="300" y="257" text-anchor="middle">OFF</text>
+                    </g>
+                </svg>
+            </div>
+            
+            <div class="status off" id="status">💡 Lâmpada APAGADA</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-card">
+                <h3>🔋 O que é um Circuito Elétrico?</h3>
+                <p>Um circuito elétrico é um caminho fechado por onde a corrente elétrica pode fluir. Ele é composto por uma fonte de energia (bateria), condutores (fios), e componentes como lâmpadas, resistores ou motores.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>⚡ Componentes Principais</h3>
+                <p><strong>Fonte de Energia:</strong> Fornece a tensão elétrica (bateria)<br>
+                <strong>Condutores:</strong> Transportam a corrente elétrica (fios)<br>
+                <strong>Carga:</strong> Utiliza a energia elétrica (lâmpada)<br>
+                <strong>Interruptor:</strong> Controla o fluxo de corrente</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🔌 Como Funciona?</h3>
+                <p>Quando o interruptor está ligado, ele fecha o circuito, permitindo que a corrente elétrica flua da bateria, passe pela lâmpada (fazendo-a acender) e retorne à bateria. Quando desligado, o circuito é aberto e a corrente para de fluir.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>💡 Lei de Ohm</h3>
+                <p>A Lei de Ohm estabelece a relação entre tensão (V), corrente (I) e resistência (R): <strong>V = R × I</strong>. Esta lei fundamental permite calcular qualquer uma dessas grandezas conhecendo as outras duas.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isOn = false;
+        const switchElement = document.getElementById('switch');
+        const switchLever = document.getElementById('switchLever');
+        const bulbLight = document.getElementById('bulbLight');
+        const status = document.getElementById('status');
+        const wires = document.querySelectorAll('.wire');
+        const battery = document.getElementById('battery');
+        const switchText = document.querySelector('.switch-text');
+
+        switchElement.addEventListener('click', function() {
+            isOn = !isOn;
+            
+            if (isOn) {
+                // Ligar o circuito
+                switchLever.classList.add('active');
+                bulbLight.classList.add('active');
+                status.classList.remove('off');
+                status.classList.add('on');
+                status.textContent = '💡 Lâmpada ACESA';
+                switchText.textContent = 'ON';
+                
+                wires.forEach(wire => wire.classList.add('active'));
+                battery.classList.add('active');
+            } else {
+                // Desligar o circuito
+                switchLever.classList.remove('active');
+                bulbLight.classList.remove('active');
+                status.classList.remove('on');
+                status.classList.add('off');
+                status.textContent = '💡 Lâmpada APAGADA';
+                switchText.textContent = 'OFF';
+                
+                wires.forEach(wire => wire.classList.remove('active'));
+                battery.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
